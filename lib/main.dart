@@ -1,0 +1,39 @@
+// ignore_for_file: prefer_const_constructors
+import 'dart:io';
+import "package:flutter/material.dart";
+import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:makeat_app/widgets/globals.dart';
+import 'package:makeat_app/widgets/splashscreen.dart';
+import "package:firebase_core/firebase_core.dart";
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
+// Flutter execution starts from here
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  String path = join(await getDatabasesPath() + "/", "makeat.db");
+  if (FileSystemEntity.typeSync(path) == FileSystemEntityType.notFound) {
+    ByteData data = await rootBundle.load("assets/sqlite/makeat.db");
+    List<int> bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    await File(path).writeAsBytes(bytes);
+  }
+  sqliteDB = await openDatabase(path);
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then(
+    (value) => runApp(
+      ProviderScope(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          appBarTheme: AppBarTheme(
+            systemOverlayStyle: SystemUiOverlayStyle.light,
+          ),
+        ),
+        home: MyApp(),
+      ),
+      ),
+    ),
+  );
+}
